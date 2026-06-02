@@ -7,12 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
+import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtservice: JwtService,
+    private jwtService: JwtService,
+    private walletService: WalletService,
   ) {}
 
   async register(email: string, password: string) {
@@ -21,6 +23,7 @@ export class AuthService {
       .catch(() => null);
     if (existing) throw new ConflictException('Email already exists');
     const user = await this.usersService.createUser(email, password);
+    await this.walletService.createWallet(user._id.toString());
     return { id: user._id, email: user.email };
   }
 
@@ -37,6 +40,6 @@ export class AuthService {
     }
 
     const payload = { sub: user._id, email: user.email, role: user.role };
-    return { access_token: this.jwtservice.sign(payload) };
+    return { access_token: this.jwtService.sign(payload) };
   }
 }
