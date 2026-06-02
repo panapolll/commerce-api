@@ -1,7 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
-import { Wallet } from './schema/wallet.schema';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Wallet } from './schema/wallet.schema';
 import { Transaction, TransactionType } from './schema/transaction.schema';
 
 @Injectable()
@@ -13,16 +17,22 @@ export class WalletService {
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<Transaction>,
   ) {}
+
+  // helper ลด bug ObjectId mismatch
+  private toObjectId(id: string) {
+    return new Types.ObjectId(id);
+  }
+
   async createWallet(userId: string) {
     return this.walletModel.create({
-      userId: new Types.ObjectId(userId),
+      userId: this.toObjectId(userId),
       balance: 0,
     });
   }
 
   async getBalance(userId: string) {
     const wallet = await this.walletModel.findOne({
-      userId,
+      userId: this.toObjectId(userId),
     });
 
     if (!wallet) {
@@ -34,7 +44,7 @@ export class WalletService {
 
   async deposit(userId: string, amount: number) {
     const wallet = await this.walletModel.findOne({
-      userId,
+      userId: this.toObjectId(userId),
     });
 
     if (!wallet) {
@@ -42,7 +52,6 @@ export class WalletService {
     }
 
     wallet.balance += amount;
-
     await wallet.save();
 
     await this.transactionModel.create({
@@ -56,7 +65,7 @@ export class WalletService {
 
   async withdraw(userId: string, amount: number) {
     const wallet = await this.walletModel.findOne({
-      userId,
+      userId: this.toObjectId(userId),
     });
 
     if (!wallet) {
@@ -68,7 +77,6 @@ export class WalletService {
     }
 
     wallet.balance -= amount;
-
     await wallet.save();
 
     await this.transactionModel.create({
@@ -82,11 +90,11 @@ export class WalletService {
 
   async transfer(fromUserId: string, toUserId: string, amount: number) {
     const senderWallet = await this.walletModel.findOne({
-      userId: fromUserId,
+      userId: this.toObjectId(fromUserId),
     });
 
     const receiverWallet = await this.walletModel.findOne({
-      userId: toUserId,
+      userId: this.toObjectId(toUserId),
     });
 
     if (!senderWallet) {
