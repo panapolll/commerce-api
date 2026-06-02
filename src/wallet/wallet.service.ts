@@ -17,12 +17,11 @@ export class WalletService {
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<Transaction>,
   ) {}
-
   // helper ลด bug ObjectId mismatch
   private toObjectId(id: string) {
     return new Types.ObjectId(id);
   }
-
+  
   async createWallet(userId: string) {
     return this.walletModel.create({
       userId: this.toObjectId(userId),

@@ -11,6 +11,10 @@ export class WalletController {
   getBalance(@Param('userId') userId: string) {
     return this.walletService.getBalance(userId);
   }
+  @Post('create')
+  createWallet(@Body('userId') userId: string) {
+    return this.walletService.createWallet(userId);
+  }
 
   @Post('deposit')
   deposit(@Body('userId') userId: string, @Body('amount') amount: number) {

@@ -13,5 +13,6 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 9000);
   console.log('ENV TEST:', process.env.MONGO_URI);
   console.log('ไม่มี error ไอน้องรัก');
+  console.log('🔥 MONGO_URI =', process.env.MONGO_URI);
 }
 bootstrap();
