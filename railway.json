@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "yarn run start:prod",
+    "startCommand": "node dist/main.js",
     "restartPolicyType": "ON_FAILURE"
   }
 }
