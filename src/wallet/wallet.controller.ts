@@ -1,37 +1,42 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { WalletService } from './wallet.service';
+import { JwtAuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('wallet')
 export class WalletController {
-  constructor(private readonly walletService: WalletService) {
-    console.log('🔥 WalletController LOADED');
+  constructor(private readonly walletService: WalletService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('balance')
+  getBalance(@Req() req) {
+    return this.walletService.getBalance(req.user.id);
   }
 
-  @Get(':userId/balance')
-  getBalance(@Param('userId') userId: string) {
-    return this.walletService.getBalance(userId);
-  }
+  @UseGuards(JwtAuthGuard)
   @Post('create')
-  createWallet(@Body('userId') userId: string) {
-    return this.walletService.createWallet(userId);
+  createWallet(@Req() req) {
+    return this.walletService.createWallet(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('deposit')
-  deposit(@Body('userId') userId: string, @Body('amount') amount: number) {
-    return this.walletService.deposit(userId, amount);
+  deposit(@Req() req, @Body('amount') amount: number) {
+    return this.walletService.deposit(req.user.id, amount);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('withdraw')
-  withdraw(@Body('userId') userId: string, @Body('amount') amount: number) {
-    return this.walletService.withdraw(userId, amount);
+  withdraw(@Req() req, @Body('amount') amount: number) {
+    return this.walletService.withdraw(req.user.id, amount);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('transfer')
   transfer(
-    @Body('fromUserId') fromUserId: string,
+    @Req() req,
     @Body('toUserId') toUserId: string,
     @Body('amount') amount: number,
   ) {
-    return this.walletService.transfer(fromUserId, toUserId, amount);
+    return this.walletService.transfer(req.user.id, toUserId, amount);
   }
 }
