@@ -7,6 +7,12 @@ export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('history')
+  getHistory(@Req() req) {
+    return this.walletService.getHistory(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('balance')
   getBalance(@Req() req) {
     return this.walletService.getBalance(req.user.id);

@@ -21,11 +21,17 @@ export class WalletService {
   private toObjectId(id: string) {
     return new Types.ObjectId(id);
   }
-  
+
   async createWallet(userId: string) {
     return this.walletModel.create({
       userId: this.toObjectId(userId),
       balance: 0,
+    });
+  }
+
+  async getHistory(userId: string) {
+    return this.transactionModel.find({
+      fromUserId: this.toObjectId(userId),
     });
   }
 
