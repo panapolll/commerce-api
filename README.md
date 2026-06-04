@@ -1,65 +1,107 @@
-🔐 Mega Project — Auth & Role-based API
-A RESTful API built with NestJS and MongoDB featuring authentication, role-based access control, and protected endpoints.
-🚀 Live API: https://mega-project-production-0d11.up.railway.app
+# 🔐 Mega Project — Auth & Role-based API
 
-✨ Features
+A RESTful API built with **NestJS** and **MongoDB** featuring JWT authentication and role-based access control.
 
-JWT Authentication (Register / Login)
-Role-based Access Control (Admin / User)
-Protected Endpoints with Guards
-Password hashing with bcrypt
-MongoDB with Mongoose
+🚀 **Live API:** https://mega-project-production-0d11.up.railway.app
 
+---
 
-🛠️ Tech Stack
+## ✨ Features
 
-Framework: NestJS
-Database: MongoDB Atlas + Mongoose
-Auth: JWT + Passport
-Deploy: Railway
+- JWT Authentication (Register / Login)
+- Role-based Access Control (Admin / User)
+- Protected Endpoints with Guards
+- Password hashing with bcrypt
+- MongoDB with Mongoose
 
+---
 
-🚀 Getting Started
-Prerequisites
+## 🛠️ Tech Stack
 
-Node.js 18+
-MongoDB Atlas account
+| Layer | Tech |
+|-------|------|
+| Framework | NestJS |
+| Database | MongoDB Atlas + Mongoose |
+| Auth | JWT + Passport |
+| Deploy | Railway |
 
-Installation
-bash# Clone the repository
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas account (or local MongoDB)
+
+### Installation
+
+```bash
+# Clone the repository
 git clone https://github.com/panapolll/-mega-project.git
+cd -mega-project
 
 # Install dependencies
 yarn install
 
-# Create .env file
+# Setup environment variables
 cp .env.example .env
-Environment Variables
-envMONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-PORT=3000
-Running the app
-bash# Development
+```
+
+### Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MONGO_URI` | MongoDB connection string | `mongodb+srv://...` |
+| `JWT_SECRET` | Random secret string (min 32 chars) | `supersecretkey123...` |
+| `PORT` | Server port | `3000` |
+
+### Running the App
+
+```bash
+# Development (with hot reload)
 yarn start:dev
 
 # Production
 yarn start:prod
+```
 
-📡 API Endpoints
-Auth
-MethodEndpointDescriptionAuthPOST/auth/registerRegister new user❌POST/auth/loginLogin and get JWT token❌
-Users
-MethodEndpointDescriptionAuthGET/users/meGet current user info✅ UserGET/users/adminGet all users✅ AdminGET/users/:idGet user by ID✅ AdminGET/users/email/:emailGet user by email✅ Admin
+---
 
-📝 Example Usage
-Register
-jsonPOST /auth/register
+## 📡 API Endpoints
+
+### Auth
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/auth/register` | Register new user | ❌ |
+| POST | `/auth/login` | Login and get JWT token | ❌ |
+
+### Users
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/users/me` | Get current user info | ✅ User |
+| GET | `/users/admin` | Get all users | ✅ Admin |
+| GET | `/users/:id` | Get user by ID | ✅ Admin |
+| GET | `/users/email/:email` | Get user by email | ✅ Admin |
+
+---
+
+## 📝 Example Usage
+
+### Register
+```json
+POST /auth/register
 {
   "email": "user@example.com",
   "password": "yourpassword"
 }
-Login
-jsonPOST /auth/login
+```
+
+### Login
+```json
+POST /auth/login
 {
   "email": "user@example.com",
   "password": "yourpassword"
@@ -69,11 +111,43 @@ jsonPOST /auth/login
 {
   "access_token": "eyJhbGci..."
 }
-Get Profile
+```
+
+### Get Profile
+```
 GET /users/me
 Authorization: Bearer <access_token>
+```
 
-👤 Roles
-RoleDescriptionuserDefault role — can access own profile onlyadminCan access all users and manage the system
+---
 
-Admin accounts are created directly via API endpoint — not available through public registration.
+## 👤 Roles
+
+| Role | Description |
+|------|-------------|
+| `user` | Default role — can access own profile only |
+| `admin` | Can access all users and manage the system |
+
+### Creating an Admin Account
+
+Admin accounts cannot be created via public registration. Use the following endpoint directly:
+
+```json
+POST /auth/register
+{
+  "email": "admin@example.com",
+  "password": "adminpassword",
+  "role": "admin"
+}
+```
+
+---
+
+## ❗ Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid JWT token |
+| `403 Forbidden` | Valid token but insufficient role |
+| `404 Not Found` | Resource not found |
+| `400 Bad Request` | Missing or invalid request body |
