@@ -8,11 +8,14 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 9000);
-  console.log('ENV TEST:', process.env.MONGO_URI);
+  await app.listen(process.env.PORT ?? 3000);
+  // console.log('ENV TEST:', process.env.MONGO_URI);
+  // console.log('🔥 MONGO_URI =', process.env.MONGO_URI);
+  console.log('PUBLIC:', process.env.OMISE_PUBLIC_KEY);
+  console.log('SECRET:', process.env.OMISE_SECRET_KEY);
   console.log('ไม่มี error ไอน้องรัก');
-  console.log('🔥 MONGO_URI =', process.env.MONGO_URI);
 }
 bootstrap();

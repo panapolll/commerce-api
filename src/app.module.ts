@@ -3,7 +3,10 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { WalletModule } from './wallet/wallet.module'; // wallet
+import { ProductsModule } from './products/products.module';
+import { CartModule } from './cart/cart.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -11,7 +14,10 @@ import { WalletModule } from './wallet/wallet.module'; // wallet
     MongooseModule.forRoot(process.env.MONGO_URI!),
     AuthModule,
     UsersModule,
-    WalletModule,
+    ProductsModule,
+    CartModule,
+    OrdersModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}
