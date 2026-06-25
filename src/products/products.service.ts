@@ -9,16 +9,18 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name) private productModel: Model<ProductDocuments>,
   ) {}
+
   async findAll() {
     return this.productModel.find({ isActive: true });
   }
 
   async findById(id: string) {
     const product = await this.productModel.findById(id);
-    if (!product) throw new NotFoundException('Product not ');
+    if (!product) throw new NotFoundException('Product not found');
     console.log('Found product:', product);
     return product;
   }
+
   async create(data: CreateProductDto, userId: string) {
     const newProduct = new this.productModel({ ...data, createdBy: userId });
     console.log('Created product:', newProduct);
@@ -39,5 +41,10 @@ export class ProductsService {
     if (!product) throw new NotFoundException('Product not found');
     console.log('Deleted product:', product);
     return { message: 'Product deleted' };
+  }
+
+  // เพิ่มใหม่: ลบทุก document ที่ชื่อซ้ำกัน
+  async deleteByName(name: string) {
+    await this.productModel.deleteMany({ name });
   }
 }
