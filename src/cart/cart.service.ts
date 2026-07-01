@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Cart, CartDocument } from './schema/cart.schema';
@@ -20,7 +20,10 @@ export class CartService {
   }
 
   async addItem(userId: string, productId: string, quantity: number) {
-    await this.productsService.findById(productId);
+    const product = await this.productsService.findById(productId);
+    if (product.stock < quantity) {
+      throw new BadRequestException('สินค้าไม่เพียงพอ');
+    }
 
     let cart = await this.cartModel.findOne({ userId });
 
@@ -38,17 +41,26 @@ export class CartService {
       cart.items.push({ productId: productId as any, quantity });
     }
 
-    return cart.save();
+    const savedCart = await cart.save();
+    await this.productsService.decreaseStock(productId, quantity);
+    return savedCart;
   }
 
   async removeItem(userId: string, productId: string) {
     const cart = await this.cartModel.findOne({ userId });
     if (!cart) throw new NotFoundException('Cart not found');
 
+    const removedItem = cart.items.find(
+      (item) => item.productId.toString() === productId,
+    );
+    if (!removedItem) throw new NotFoundException('Item not found in cart');
+
     cart.items = cart.items.filter(
       (item) => item.productId.toString() !== productId,
     );
 
-    return cart.save();
+    const savedCart = await cart.save();
+    await this.productsService.increaseStock(productId, removedItem.quantity);
+    return savedCart;
   }
 }
