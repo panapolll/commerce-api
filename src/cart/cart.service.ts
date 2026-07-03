@@ -63,4 +63,11 @@ export class CartService {
     await this.productsService.increaseStock(productId, removedItem.quantity);
     return savedCart;
   }
+
+  async clearCart(userId: string) {
+    const cart = await this.cartModel.findOne({ userId });
+    if (!cart) return { items: [] };
+    cart.items = [];
+    return cart.save();
+  }
 }

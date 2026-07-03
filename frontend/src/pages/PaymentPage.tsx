@@ -72,7 +72,7 @@ function PaymentPage() {
           const result = await chargePayment(state.orderId, response.id);
           if (result.status === 'successful') {
             alert('ชำระเงินสำเร็จ!');
-            navigate('/products');
+            navigate('/orders');
           } else {
             setError('ชำระเงินไม่สำเร็จ');
           }

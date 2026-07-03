@@ -9,6 +9,7 @@ React + Vite frontend for a microservices fruit e-commerce platform with Omise p
 - Product listing with admin CRUD
 - Shopping cart with real-time stock updates
 - Checkout flow with Omise card payment (test mode)
+- Order history page
 - Role-based UI (admin can add/delete products)
 
 ## 🛠️ Tech Stack
@@ -75,7 +76,7 @@ yarn dev
 ## 📱 User Flow
 
 ```
-Register → Login → Browse Products → Add to Cart → Checkout → Pay with Omise → Success
+Register → Login → Browse Products → Add to Cart → Checkout → Pay with Omise → Order History
 ```
 
 ## 🧪 Test Payment (Omise Test Mode)

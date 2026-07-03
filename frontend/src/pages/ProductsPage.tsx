@@ -183,6 +183,20 @@ function ProductsPage({ token, onLogout }: ProductsPageProps) {
                         </button>
                     )}
                     <button
+                        onClick={() => navigate('/orders')}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid #a78bfa',
+                            color: '#a78bfa',
+                            padding: '8px 20px',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                            fontSize: 14,
+                        }}
+                    >
+                        📦 ออเดอร์
+                    </button>
+                    <button
                         onClick={() => navigate('/cart')}
                         style={{
                             background: 'transparent',

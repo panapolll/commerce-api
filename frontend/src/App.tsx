@@ -5,6 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import PaymentPage from './pages/PaymentPage';
+import OrdersPage from './pages/OrdersPage';
 import { refreshToken } from './api/auth';
 import { setAccessToken, setRefreshHandler } from './api/client';
 
@@ -83,6 +84,10 @@ function App() {
         <Route
           path="/payment"
           element={token ? <PaymentPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/orders"
+          element={token ? <OrdersPage /> : <Navigate to="/login" />}
         />
         <Route path="*" element={<Navigate to={token ? '/products' : '/login'} />} />
       </Routes>
