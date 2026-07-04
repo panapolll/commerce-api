@@ -1,15 +1,16 @@
 # 🍎 Fruit Shop — Commerce API
 
-NestJS microservice for product catalog, shopping cart, order management, and Omise payment processing.
+NestJS microservice สำหรับจัดการสินค้า ตะกร้า ออเดอร์ และชำระเงินผ่าน Omise
 
 ## ✨ Features
 
-- Product CRUD with admin role guard
-- Shopping cart (add / remove items)
-- Stock management (decrease on add-to-cart, restore on remove)
-- Order checkout (creates PENDING order)
-- Omise payment charge (updates order to PAID)
-- JWT authentication via shared secret with Auth Service
+- Product CRUD (admin only)
+- Shopping cart (เพิ่ม / ลบสินค้า)
+- Stock management (ลด stock ตอน add to cart, คืน stock ตอน remove)
+- Order checkout (สร้าง order สถานะ PENDING)
+- Omise payment charge (อัปเดต order เป็น PAID)
+- ล้างตะกร้าหลังชำระเงินสำเร็จ
+- JWT authentication (ใช้ secret ร่วมกับ Auth Service)
 
 ## 🛠️ Tech Stack
 
@@ -43,7 +44,7 @@ API Gateway (:3004)
 ### Prerequisites
 
 - Node.js 20+
-- MongoDB (local or Atlas)
+- MongoDB (local หรือ Atlas)
 - Omise test account keys
 
 ### Installation
@@ -60,7 +61,7 @@ cp .env.example .env
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/fruitshop` |
-| `JWT_SECRET` | Must match Auth Service secret | `your-shared-secret` |
+| `JWT_SECRET` | ต้องตรงกับ Auth Service | `your-shared-secret` |
 | `OMISE_PUBLIC_KEY` | Omise public key | `pkey_test_xxx` |
 | `OMISE_SECRET_KEY` | Omise secret key | `skey_test_xxx` |
 | `PORT` | Server port | `3000` |
@@ -69,7 +70,7 @@ cp .env.example .env
 
 ```bash
 yarn seed
-# Creates admin user + sample fruit products
+# สร้าง admin + สินค้าตัวอย่าง
 ```
 
 ### Running
@@ -88,42 +89,42 @@ yarn build && yarn start:prod
 
 | Method | Endpoint | Auth | Role | Description |
 |--------|----------|------|------|-------------|
-| GET | `/products` | ❌ | — | List all products |
-| GET | `/products/:id` | ❌ | — | Get product by ID |
-| POST | `/products` | ✅ | admin | Create product |
-| PUT | `/products/:id` | ✅ | admin | Update product |
-| DELETE | `/products/:id` | ✅ | admin | Delete product |
+| GET | `/products` | ❌ | — | ดูสินค้าทั้งหมด |
+| GET | `/products/:id` | ❌ | — | ดูสินค้าตาม ID |
+| POST | `/products` | ✅ | admin | สร้างสินค้า |
+| PUT | `/products/:id` | ✅ | admin | แก้ไขสินค้า |
+| DELETE | `/products/:id` | ✅ | admin | ลบสินค้า |
 
 ### Cart
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/cart` | ✅ | Get user cart |
-| POST | `/cart/items` | ✅ | Add item `{ productId, quantity }` |
-| DELETE | `/cart/items/:productId` | ✅ | Remove item |
+| GET | `/cart` | ✅ | ดูตะกร้า |
+| POST | `/cart/items` | ✅ | เพิ่มสินค้า `{ productId, quantity }` |
+| DELETE | `/cart/items/:productId` | ✅ | ลบสินค้าออกจากตะกร้า |
 
 ### Orders
 
 | Method | Endpoint | Auth | Role | Description |
 |--------|----------|------|------|-------------|
-| POST | `/orders/checkout` | ✅ | user | Create order from cart |
-| GET | `/orders/me` | ✅ | user | Get my orders |
-| GET | `/orders` | ✅ | admin | Get all orders |
-| PATCH | `/orders/:id/status` | ✅ | admin | Update order status |
+| POST | `/orders/checkout` | ✅ | user | สร้าง order จากตะกร้า |
+| GET | `/orders/me` | ✅ | user | ดูออเดอร์ของตัวเอง |
+| GET | `/orders` | ✅ | admin | ดูออเดอร์ทั้งหมด |
+| PATCH | `/orders/:id/status` | ✅ | admin | อัปเดตสถานะ order |
 
 ### Payments
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/payments/charge` | ✅ | Charge via Omise `{ orderId, token }` |
+| POST | `/payments/charge` | ✅ | ชำระเงิน Omise `{ orderId, token }` |
 | POST | `/payments/webhook` | ❌ | Omise webhook (optional) |
 
 ## 🔄 Stock Management Flow
 
 ```
-Add to cart    → stock -1
+Add to cart      → stock -1
 Remove from cart → stock +1
-Payment success  → order status = PAID + clear cart
+Payment success  → order = PAID + ล้างตะกร้า
 ```
 
 ## 🐳 Docker
