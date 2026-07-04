@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Cart, CartDocument } from './schema/cart.schema';
@@ -26,7 +30,6 @@ export class CartService {
     }
 
     let cart = await this.cartModel.findOne({ userId });
-
     if (!cart) {
       cart = new this.cartModel({ userId, items: [] });
     }

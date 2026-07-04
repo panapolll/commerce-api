@@ -107,7 +107,19 @@ src/
 
 ## 📸 Screenshots
 
-> Add screenshots to `/screenshots` folder for portfolio display.
+| Login | Products |
+|-------|----------|
+| ![Login](./screenshots/login.png) | ![Products](./screenshots/products.png) |
+
+| Cart | Payment |
+|------|---------|
+| ![Cart](./screenshots/cart.png) | ![Payment](./screenshots/payment.png) |
+
+> Place image files in `/screenshots` — see [screenshots/README.md](./screenshots/README.md)
+
+## 🌐 Live Demo
+
+> Coming soon — deploy on [Vercel](https://vercel.com)
 
 ## 👨‍💻 Author
 

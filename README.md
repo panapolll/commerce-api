@@ -123,7 +123,7 @@ yarn build && yarn start:prod
 ```
 Add to cart    → stock -1
 Remove from cart → stock +1
-Payment success  → order status = PAID
+Payment success  → order status = PAID + clear cart
 ```
 
 ## 🐳 Docker

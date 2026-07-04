@@ -58,6 +58,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route
+          path="/"
+          element={<Navigate to={token ? '/products' : '/login'} />}
+        />
+        <Route
           path="/register"
           element={token ? <Navigate to="/products" /> : <RegisterPage />}
         />
