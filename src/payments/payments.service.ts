@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import Omise from 'omise';
+import { CartService } from 'src/cart/cart.service';
 import {
   Order,
   OrderDocument,
@@ -17,6 +18,7 @@ export class PaymentsService {
   private omise!: ReturnType<typeof Omise>;
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    private cartService: CartService,
   ) {
     this.omise = Omise({
       publicKey: process.env.OMISE_PUBLIC_KEY,
@@ -30,7 +32,6 @@ export class PaymentsService {
     if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException('Order is not pending');
     }
-    console.log(await this.omise.account.retrieve());
     const charge = await this.omise.charges.create({
       amount: order.totalPrice * 100,
       currency: 'thb',
@@ -39,6 +40,7 @@ export class PaymentsService {
     if (charge.status === 'successful') {
       order.status = OrderStatus.PAID;
       await order.save();
+      await this.cartService.clearCart(String(order.userId));
     }
 
     return { chargeId: charge.id, status: charge.status };

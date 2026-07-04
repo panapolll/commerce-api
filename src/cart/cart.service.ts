@@ -28,18 +28,22 @@ export class CartService {
     if (product.stock < quantity) {
       throw new BadRequestException('สินค้าไม่เพียงพอ');
     }
+
     let cart = await this.cartModel.findOne({ userId });
     if (!cart) {
       cart = new this.cartModel({ userId, items: [] });
     }
+
     const existingItem = cart.items.find(
       (item) => item.productId.toString() === productId,
     );
+
     if (existingItem) {
       existingItem.quantity += quantity;
     } else {
       cart.items.push({ productId: productId as any, quantity });
     }
+
     const savedCart = await cart.save();
     await this.productsService.decreaseStock(productId, quantity);
     return savedCart;
@@ -48,15 +52,25 @@ export class CartService {
   async removeItem(userId: string, productId: string) {
     const cart = await this.cartModel.findOne({ userId });
     if (!cart) throw new NotFoundException('Cart not found');
+
     const removedItem = cart.items.find(
       (item) => item.productId.toString() === productId,
     );
     if (!removedItem) throw new NotFoundException('Item not found in cart');
+
     cart.items = cart.items.filter(
       (item) => item.productId.toString() !== productId,
     );
+
     const savedCart = await cart.save();
     await this.productsService.increaseStock(productId, removedItem.quantity);
     return savedCart;
+  }
+
+  async clearCart(userId: string) {
+    const cart = await this.cartModel.findOne({ userId });
+    if (!cart) return { items: [] };
+    cart.items = [];
+    return cart.save();
   }
 }

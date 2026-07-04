@@ -1,50 +1,57 @@
-# 🔐 Mega Project — Auth & Role-based API
+# 🍎 Fruit Shop — Commerce API
 
-A RESTful API built with **NestJS** and **MongoDB** featuring JWT authentication and role-based access control.
-
-🚀 **Live API:** https://mega-project-production-0d11.up.railway.app
-
----
+NestJS microservice for product catalog, shopping cart, order management, and Omise payment processing.
 
 ## ✨ Features
 
-- JWT Authentication (Register / Login)
-- Role-based Access Control (Admin / User)
-- Protected Endpoints with Guards
-- Password hashing with bcrypt
-- MongoDB with Mongoose
-
----
+- Product CRUD with admin role guard
+- Shopping cart (add / remove items)
+- Stock management (decrease on add-to-cart, restore on remove)
+- Order checkout (creates PENDING order)
+- Omise payment charge (updates order to PAID)
+- JWT authentication via shared secret with Auth Service
 
 ## 🛠️ Tech Stack
 
-| Layer | Tech |
-|-------|------|
+| Layer | Technology |
+|-------|------------|
 | Framework | NestJS |
-| Database | MongoDB Atlas + Mongoose |
+| Database | MongoDB + Mongoose |
 | Auth | JWT + Passport |
-| Deploy | Railway |
+| Payment | Omise |
+| Language | TypeScript |
 
----
+## 🏗️ Architecture
+
+```
+API Gateway (:3004)
+  └── Commerce API (:3000)  ← this repo
+        ├── MongoDB
+        └── Omise API
+```
+
+## 🔗 Related Repositories
+
+| Service | Repository |
+|---------|------------|
+| Frontend | [fruit-shop-frontend](https://github.com/panapolll/fruit-shop-frontend) |
+| API Gateway | [Api-Gateway](https://github.com/panapolll/Api-Gateway) |
+| Auth Service | [Auth-Service](https://github.com/panapolll/Auth-Service) |
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- MongoDB Atlas account (or local MongoDB)
+- Node.js 20+
+- MongoDB (local or Atlas)
+- Omise test account keys
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/panapolll/-mega-project.git
-cd -mega-project
-
-# Install dependencies
+git clone https://github.com/panapolll/commerce-api.git
+cd commerce-api
 yarn install
-
-# Setup environment variables
 cp .env.example .env
 ```
 
@@ -52,102 +59,80 @@ cp .env.example .env
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `MONGO_URI` | MongoDB connection string | `mongodb+srv://...` |
-| `JWT_SECRET` | Random secret string (min 32 chars) | `supersecretkey123...` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/fruitshop` |
+| `JWT_SECRET` | Must match Auth Service secret | `your-shared-secret` |
+| `OMISE_PUBLIC_KEY` | Omise public key | `pkey_test_xxx` |
+| `OMISE_SECRET_KEY` | Omise secret key | `skey_test_xxx` |
 | `PORT` | Server port | `3000` |
 
-### Running the App
+### Seed Data
 
 ```bash
-# Development (with hot reload)
+yarn seed
+# Creates admin user + sample fruit products
+```
+
+### Running
+
+```bash
+# Development
 yarn start:dev
 
 # Production
-yarn start:prod
+yarn build && yarn start:prod
 ```
-
----
 
 ## 📡 API Endpoints
 
-### Auth
+### Products
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/auth/register` | Register new user | ❌ |
-| POST | `/auth/login` | Login and get JWT token | ❌ |
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| GET | `/products` | ❌ | — | List all products |
+| GET | `/products/:id` | ❌ | — | Get product by ID |
+| POST | `/products` | ✅ | admin | Create product |
+| PUT | `/products/:id` | ✅ | admin | Update product |
+| DELETE | `/products/:id` | ✅ | admin | Delete product |
 
-### Users
+### Cart
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/users/me` | Get current user info | ✅ User |
-| GET | `/users/admin` | Get all users | ✅ Admin |
-| GET | `/users/:id` | Get user by ID | ✅ Admin |
-| GET | `/users/email/:email` | Get user by email | ✅ Admin |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/cart` | ✅ | Get user cart |
+| POST | `/cart/items` | ✅ | Add item `{ productId, quantity }` |
+| DELETE | `/cart/items/:productId` | ✅ | Remove item |
 
----
+### Orders
 
-## 📝 Example Usage
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| POST | `/orders/checkout` | ✅ | user | Create order from cart |
+| GET | `/orders/me` | ✅ | user | Get my orders |
+| GET | `/orders` | ✅ | admin | Get all orders |
+| PATCH | `/orders/:id/status` | ✅ | admin | Update order status |
 
-### Register
-```json
-POST /auth/register
-{
-  "email": "user@example.com",
-  "password": "yourpassword"
-}
+### Payments
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/payments/charge` | ✅ | Charge via Omise `{ orderId, token }` |
+| POST | `/payments/webhook` | ❌ | Omise webhook (optional) |
+
+## 🔄 Stock Management Flow
+
+```
+Add to cart    → stock -1
+Remove from cart → stock +1
+Payment success  → order status = PAID + clear cart
 ```
 
-### Login
-```json
-POST /auth/login
-{
-  "email": "user@example.com",
-  "password": "yourpassword"
-}
+## 🐳 Docker
 
-// Response
-{
-  "access_token": "eyJhbGci..."
-}
+```bash
+docker build -t commerce-api .
+docker run -p 3000:3000 --env-file .env commerce-api
 ```
 
-### Get Profile
-```
-GET /users/me
-Authorization: Bearer <access_token>
-```
+## 👨‍💻 Author
 
----
-
-## 👤 Roles
-
-| Role | Description |
-|------|-------------|
-| `user` | Default role — can access own profile only |
-| `admin` | Can access all users and manage the system |
-
-### Creating an Admin Account
-
-Admin accounts cannot be created via public registration. Use the following endpoint directly:
-
-```json
-POST /auth/register
-{
-  "email": "admin@example.com",
-  "password": "adminpassword",
-  "role": "admin"
-}
-```
-
----
-
-## ❗ Error Responses
-
-| Status | Description |
-|--------|-------------|
-| `401 Unauthorized` | Missing or invalid JWT token |
-| `403 Forbidden` | Valid token but insufficient role |
-| `404 Not Found` | Resource not found |
-| `400 Bad Request` | Missing or invalid request body |
+Portfolio project — microservices e-commerce with payment integration.

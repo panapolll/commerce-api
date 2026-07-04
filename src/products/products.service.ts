@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product, ProductDocuments } from './schema/product.schema';
 import { Model } from 'mongoose';
@@ -17,13 +21,11 @@ export class ProductsService {
   async findById(id: string) {
     const product = await this.productModel.findById(id);
     if (!product) throw new NotFoundException('Product not found');
-    console.log('Found product:', product);
     return product;
   }
 
   async create(data: CreateProductDto, userId: string) {
     const newProduct = new this.productModel({ ...data, createdBy: userId });
-    console.log('Created product:', newProduct);
     return newProduct.save();
   }
 
@@ -32,18 +34,15 @@ export class ProductsService {
       new: true,
     });
     if (!product) throw new NotFoundException('Product not found');
-    console.log('Updated product:', product);
     return product;
   }
 
   async delete(id: string) {
     const product = await this.productModel.findByIdAndDelete(id);
     if (!product) throw new NotFoundException('Product not found');
-    console.log('Deleted product:', product);
     return { message: 'Product deleted' };
   }
 
-  // เพิ่มใหม่: ลบทุก document ที่ชื่อซ้ำกัน
   async deleteByName(name: string) {
     await this.productModel.deleteMany({ name });
   }
