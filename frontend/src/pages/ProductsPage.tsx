@@ -5,6 +5,7 @@ import axios from 'axios';
 import { gatewayClient } from '../api/client';
 import { addToCart } from '../api/cart';
 import { createProduct, deleteProduct } from '../api/products';
+import { getUnreadCount } from '../api/notifications';
 
 interface Product {
     _id: string;
@@ -42,6 +43,7 @@ function ProductsPage({ token, onLogout }: ProductsPageProps) {
     const [stock, setStock] = useState('');
     const [formError, setFormError] = useState('');
     const [cartMessage, setCartMessage] = useState('');
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const fetchProducts = async () => {
         try {
@@ -60,6 +62,9 @@ function ProductsPage({ token, onLogout }: ProductsPageProps) {
 
     useEffect(() => {
         void fetchProducts();
+        void getUnreadCount()
+            .then(setUnreadCount)
+            .catch(() => setUnreadCount(0));
     }, []);
 
     const handleCreate = async (e: React.FormEvent) => {
@@ -182,6 +187,41 @@ function ProductsPage({ token, onLogout }: ProductsPageProps) {
                             {showForm ? 'ยกเลิก' : '+ เพิ่มสินค้า'}
                         </button>
                     )}
+                    <button
+                        onClick={() => navigate('/notifications')}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid #f59e0b',
+                            color: '#f59e0b',
+                            padding: '8px 20px',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                            fontSize: 14,
+                            position: 'relative',
+                        }}
+                    >
+                        🔔 แจ้งเตือน
+                        {unreadCount > 0 && (
+                            <span style={{
+                                position: 'absolute',
+                                top: -6,
+                                right: -6,
+                                background: '#ef4444',
+                                color: '#fff',
+                                fontSize: 11,
+                                fontWeight: 'bold',
+                                minWidth: 18,
+                                height: 18,
+                                borderRadius: 9,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '0 4px',
+                            }}>
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
                     <button
                         onClick={() => navigate('/orders')}
                         style={{
