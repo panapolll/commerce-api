@@ -62,10 +62,14 @@ function ProductsPage({ token, onLogout }: ProductsPageProps) {
 
     useEffect(() => {
         void fetchProducts();
+    }, []);
+
+    useEffect(() => {
+        if (!token) return;
         void getUnreadCount()
             .then(setUnreadCount)
             .catch(() => setUnreadCount(0));
-    }, []);
+    }, [token]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();

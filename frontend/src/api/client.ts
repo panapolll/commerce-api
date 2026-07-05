@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { GATEWAY_URL } from './config';
 
-let accessToken: string | null = null;
+let accessToken: string | null = localStorage.getItem('access_token');
 let refreshHandler: (() => Promise<string | null>) | null = null;
 
 export const setAccessToken = (token: string | null) => {
