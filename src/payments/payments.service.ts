@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import Omise from 'omise';
 import { CartService } from 'src/cart/cart.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 import {
   Order,
   OrderDocument,
@@ -19,6 +20,7 @@ export class PaymentsService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     private cartService: CartService,
+    private notificationsService: NotificationsService,
   ) {
     this.omise = Omise({
       publicKey: process.env.OMISE_PUBLIC_KEY,
@@ -41,6 +43,11 @@ export class PaymentsService {
       order.status = OrderStatus.PAID;
       await order.save();
       await this.cartService.clearCart(String(order.userId));
+      await this.notificationsService.sendPaymentSuccess(
+        String(order.userId),
+        String(order._id),
+        order.totalPrice,
+      );
     }
 
     return { chargeId: charge.id, status: charge.status };
