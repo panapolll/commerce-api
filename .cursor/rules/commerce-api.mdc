@@ -1,0 +1,19 @@
+---
+description: Commerce API module context (see also fruit-shop.mdc)
+globs:
+  - "src/**"
+alwaysApply: false
+---
+
+# Commerce API (repo นี้)
+
+NestJS service port **3000** — products, cart, orders, Omise payments.
+
+สำหรับ architecture ทั้งระบบ 5 repos ดู `.cursor/rules/fruit-shop.mdc`
+
+## Commands
+
+```bash
+yarn install && cp .env.example .env
+yarn seed && yarn start:dev
+```

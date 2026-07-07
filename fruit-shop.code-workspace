@@ -1,0 +1,142 @@
+{
+  "folders": [
+    { "name": "Frontend", "path": "fruit-shop-frontend" },
+    { "name": "API Gateway", "path": "Api-Gateway" },
+    { "name": "Commerce API", "path": "commerce-api" },
+    { "name": "Auth Service", "path": "Auth-Service" },
+    { "name": "Notification Service", "path": "notification-service" }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/yarn.lock": true,
+      "**/package-lock.json": true
+    },
+    "files.exclude": {
+      "**/dist": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "firsttris.vscode-jest-runner"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "mongo:up",
+        "type": "shell",
+        "command": "docker compose -f commerce-api/local-dev/docker-compose.yml up -d",
+        "options": { "cwd": "${workspaceFolder:Commerce API}/.." },
+        "problemMatcher": []
+      },
+      {
+        "label": "auth:dev",
+        "type": "shell",
+        "command": "yarn start:dev",
+        "options": { "cwd": "${workspaceFolder:Auth Service}" },
+        "isBackground": true,
+        "problemMatcher": {
+          "owner": "nestjs",
+          "pattern": { "regexp": "^$" },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Nest application successfully started|listening"
+          }
+        },
+        "presentation": { "group": "services", "panel": "dedicated", "reveal": "always" }
+      },
+      {
+        "label": "commerce:dev",
+        "type": "shell",
+        "command": "yarn start:dev",
+        "options": { "cwd": "${workspaceFolder:Commerce API}" },
+        "isBackground": true,
+        "problemMatcher": {
+          "owner": "nestjs",
+          "pattern": { "regexp": "^$" },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Nest application successfully started|listening"
+          }
+        },
+        "presentation": { "group": "services", "panel": "dedicated", "reveal": "always" }
+      },
+      {
+        "label": "notification:dev",
+        "type": "shell",
+        "command": "yarn start:dev",
+        "options": { "cwd": "${workspaceFolder:Notification Service}" },
+        "isBackground": true,
+        "problemMatcher": {
+          "owner": "nestjs",
+          "pattern": { "regexp": "^$" },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Nest application successfully started|listening|running on port"
+          }
+        },
+        "presentation": { "group": "services", "panel": "dedicated", "reveal": "always" }
+      },
+      {
+        "label": "gateway:dev",
+        "type": "shell",
+        "command": "yarn start:dev",
+        "options": { "cwd": "${workspaceFolder:API Gateway}" },
+        "isBackground": true,
+        "problemMatcher": {
+          "owner": "nestjs",
+          "pattern": { "regexp": "^$" },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Nest application successfully started|listening"
+          }
+        },
+        "presentation": { "group": "services", "panel": "dedicated", "reveal": "always" }
+      },
+      {
+        "label": "frontend:dev",
+        "type": "shell",
+        "command": "yarn dev",
+        "options": { "cwd": "${workspaceFolder:Frontend}" },
+        "isBackground": true,
+        "problemMatcher": {
+          "owner": "vite",
+          "pattern": { "regexp": "^$" },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Local:|ready in"
+          }
+        },
+        "presentation": { "group": "services", "panel": "dedicated", "reveal": "always" }
+      },
+      {
+        "label": "🚀 Start All Services",
+        "dependsOn": [
+          "mongo:up",
+          "auth:dev",
+          "commerce:dev",
+          "notification:dev",
+          "gateway:dev",
+          "frontend:dev"
+        ],
+        "dependsOrder": "parallel",
+        "problemMatcher": []
+      }
+    ]
+  }
+}

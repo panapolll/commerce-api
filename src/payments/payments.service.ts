@@ -7,7 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import Omise from 'omise';
 import { CartService } from 'src/cart/cart.service';
-import { NotificationsService } from 'src/notfications/notfications.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 import {
   Order,
   OrderDocument,
