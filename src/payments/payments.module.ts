@@ -3,7 +3,7 @@ import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 import { OrdersModule } from 'src/orders/orders.module';
 import { CartModule } from 'src/cart/cart.module';
-import { NotificationsModule } from 'src/notfications/notfications.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [OrdersModule, CartModule, NotificationsModule],
