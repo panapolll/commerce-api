@@ -37,7 +37,33 @@ API Gateway (:3004)
 |---------|------------|
 | Frontend | [fruit-shop-frontend](https://github.com/panapolll/fruit-shop-frontend) |
 | API Gateway | [Api-Gateway](https://github.com/panapolll/Api-Gateway) |
-| Auth Service | [Auth-Service](https://github.com/panapolll/Auth-Service) |
+| Notification Service | [notification-service](https://github.com/panapolll/notification-service) |
+
+## 🖥️ Cursor Desktop — เปิดทุก repo พร้อมกัน
+
+ระบบมี **5 repositories** ที่ทำงานร่วมกัน ใช้ multi-root workspace:
+
+```bash
+git clone https://github.com/panapolll/commerce-api.git
+cd commerce-api
+chmod +x scripts/setup-workspace.sh
+./scripts/setup-workspace.sh ~/fruit-shop
+```
+
+จากนั้นใน Cursor Desktop: **File → Open Workspace from File** → `~/fruit-shop/fruit-shop.code-workspace`
+
+สคริปต์จะ clone repos ที่เหลือ, สร้าง `.env` ให้ทุก service, ติดตั้ง dependencies และรัน MongoDB
+
+รันทุก service: **Terminal → Run Task → 🚀 Start All Services**
+
+| Service | Port |
+|---------|------|
+| Frontend | 5173 |
+| API Gateway | 3004 |
+| Commerce API | 3000 |
+| Auth Service | 3100 |
+| Notification Service | 3001 |
+| MongoDB | 27017 |
 
 ## 🚀 Getting Started
 

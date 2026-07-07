@@ -1,40 +1,19 @@
 ---
-description: Commerce API (Fruit Shop) — NestJS microservice context
+description: Commerce API module context (see also fruit-shop.mdc)
 globs:
-alwaysApply: true
+  - "src/**"
+alwaysApply: false
 ---
 
-# Commerce API
+# Commerce API (repo นี้)
 
-NestJS backend สำหรับ Fruit Shop e-commerce (port 3000)
+NestJS service port **3000** — products, cart, orders, Omise payments.
 
-## Architecture
-
-- **This repo**: Commerce API — products, cart, orders, payments (Omise)
-- **Related**: Auth-Service (JWT), Api-Gateway (:3004), Notification Service (:3001), fruit-shop-frontend (:5173)
-
-## Conventions
-
-- TypeScript + NestJS modules under `src/`
-- MongoDB via Mongoose; env var `MONGODB_URI`
-- JWT secret ต้องตรงกับ Auth Service
-- Payment success ส่ง notification ไป Notification Service ผ่าน `NOTIFICATION_SERVICE_URL`
+สำหรับ architecture ทั้งระบบ 5 repos ดู `.cursor/rules/fruit-shop.mdc`
 
 ## Commands
 
 ```bash
-yarn install
-cp .env.example .env   # แก้ค่า JWT, Omise, MongoDB
-yarn seed              # admin + สินค้าตัวอย่าง
-yarn start:dev         # http://localhost:3000
-yarn build && yarn test
+yarn install && cp .env.example .env
+yarn seed && yarn start:dev
 ```
-
-## Local stack (เต็มระบบ)
-
-1. MongoDB
-2. Auth-Service
-3. Notification Service (:3001)
-4. Commerce API (:3000) — repo นี้
-5. Api-Gateway (:3004)
-6. fruit-shop-frontend (:5173)

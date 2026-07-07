@@ -1,0 +1,55 @@
+---
+description: Fruit Shop — full microservices stack (5 repos)
+globs:
+alwaysApply: true
+---
+
+# Fruit Shop — Microservices Stack
+
+เปิดด้วย `fruit-shop.code-workspace` (multi-root) — มี 5 repos ทำงานร่วมกัน
+
+## Architecture
+
+```
+Frontend (:5173)  fruit-shop-frontend
+  └── API Gateway (:3004)  Api-Gateway
+        ├── Auth Service (:3100)        Auth-Service      → /auth/*
+        ├── Commerce API (:3000)          commerce-api      → /products, /cart, /orders, /payments
+        └── Notification Service (:3001)  notification-service → /notifications/*
+              MongoDB (:27017) — shared database
+```
+
+## Repositories
+
+| Folder | Port | Role |
+|--------|------|------|
+| `fruit-shop-frontend` | 5173 | React + Vite, เรียก Gateway |
+| `Api-Gateway` | 3004 | Proxy + JWT guard |
+| `commerce-api` | 3000 | Products, cart, orders, Omise payments |
+| `Auth-Service` | 3100 | Register, login, JWT refresh |
+| `notification-service` | 3001 | In-app notifications |
+
+## Shared secrets (ต้องตรงกันทุก service)
+
+- `JWT_SECRET` — Auth, Commerce, Notification
+- `MONGODB_URI` / `MONGO_URI` — Auth, Commerce, Notification (notification ใช้ชื่อ `MONGO_URI`)
+
+## Local setup
+
+```bash
+# จาก commerce-api repo
+chmod +x scripts/setup-workspace.sh
+./scripts/setup-workspace.sh ~/fruit-shop
+# เปิด ~/fruit-shop/fruit-shop.code-workspace ใน Cursor Desktop
+# Run Task: 🚀 Start All Services
+```
+
+## Gateway env keys
+
+- `AUTH_SERVICE_URL` → `http://localhost:3100`
+- `COMMERCE_API_URL` → `http://localhost:3000` (ไม่ใช่ COMMERCE_SERVICE_URL)
+- `NOTIFICATION_SERVICE_URL` → `http://localhost:3001`
+
+## Payment flow
+
+Checkout → PENDING order → Omise charge → PAID → clear cart → notification `payment_success`
