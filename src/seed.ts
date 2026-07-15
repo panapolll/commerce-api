@@ -14,8 +14,15 @@ async function bootstrap() {
   const productsService = app.get(ProductsService);
 
   // สร้าง admin
-  const email = 'admin@gmail.com';
-  const password = '1234567890';
+  const email = process.env.SEED_ADMIN_EMAIL;
+  const password = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error(
+      'กรุณาตั้งค่า SEED_ADMIN_EMAIL และ SEED_ADMIN_PASSWORD ใน .env ก่อนรัน seed',
+    );
+  }
+
   let adminId: string;
 
   try {

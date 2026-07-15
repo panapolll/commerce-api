@@ -7,6 +7,7 @@ import { ProductsModule } from './products/products.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { NotificationsModule } from './notfications/notfications.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PaymentsModule } from './payments/payments.module';
     CartModule,
     OrdersModule,
     PaymentsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
