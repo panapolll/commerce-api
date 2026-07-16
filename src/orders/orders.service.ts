@@ -16,6 +16,16 @@ export class OrdersService {
   ) {}
 
   async checkout(userId: string) {
+    // ★ เช็คก่อนว่ามี order ค้างสถานะ pending ของ user นี้อยู่แล้วมั้ย
+    // กันกรณีกด checkout ซ้ำก่อนจะไปจ่ายเงิน (มือลั่น / เน็ตกระตุกแล้วกดซ้ำ)
+    const existingPending = await this.orderModel.findOne({
+      userId,
+      status: OrderStatus.PENDING,
+    });
+    if (existingPending) {
+      return existingPending;
+    }
+
     const cart = await this.cartService.getCart(userId);
 
     if (!cart.items || cart.items.length === 0) {
