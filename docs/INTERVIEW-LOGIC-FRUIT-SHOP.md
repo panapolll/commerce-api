@@ -273,7 +273,7 @@ LOGIC:
 
 ---
 
-### updateStatus (admin)
+### updateStatus (admin) — มีใน commerce-api แต่ยังไม่ต่อ Gateway/Frontend
 
 ```
 LOGIC:
@@ -281,6 +281,11 @@ if status not in [pending, paid, shipped, delivered] → BadRequestException
 order = findByIdAndUpdate(id, { status })
 → ไม่เจอ → NotFoundException
 ```
+
+**สถานะจริงในโปรเจกต์:**
+- `pending` → ตอน checkout (ทำงาน)
+- `paid` → ตอน charge สำเร็จ (ทำงาน)
+- `shipped` / `delivered` → มีใน enum + API admin แต่ **ยังไม่ได้ใช้ใน flow จริง**
 
 ---
 
@@ -460,6 +465,14 @@ Status flow:
 ---
 
 ## 10. คำถามสัมภาษณ์เรื่อง Logic
+
+**Q: order status มีอะไรบ้าง ทำครบทุกอันไหม?**
+
+> Schema มี pending, paid, shipped, delivered
+> Flow ที่ทำงานจริงตอนนี้แค่ pending → paid
+> shipped/delivered เตรียมไว้ใน schema และมี admin endpoint ใน commerce-api แต่ยังไม่ต่อ Gateway และไม่มี UI
+
+---
 
 **Q: ถ้า add cart แล้วไม่ checkout จะเกิดอะไร?**
 
