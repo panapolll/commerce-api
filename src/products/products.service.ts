@@ -48,13 +48,18 @@ export class ProductsService {
   }
 
   async decreaseStock(id: string, quantity: number) {
-    const product = await this.productModel.findById(id);
-    if (!product) throw new NotFoundException('Product not found');
-    if (product.stock < quantity) {
+    // const product = await this.productModel.findById(id);
+    const product = await this.productModel.findOneAndUpdate(
+      { _id: id, stock: { $gte: quantity } },
+      { $inc: { stock: -quantity } },
+      { new: true },
+    );
+    if (!product) {
+      const exist = await this.productModel.findById(id);
+      if (!exist) throw new NotFoundException('Product Not Found');
       throw new BadRequestException('สินค้าไม่เพียงพอ');
     }
-    product.stock -= quantity;
-    return product.save();
+    return product;
   }
 
   async increaseStock(id: string, quantity: number) {
