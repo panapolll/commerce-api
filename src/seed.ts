@@ -13,16 +13,22 @@ async function bootstrap() {
   const usersService = app.get(UsersService);
   const productsService = app.get(ProductsService);
 
-  // สร้าง admin
-  const email = 'admin@gmail.com';
-  const password = '1234567890';
+  const email = process.env.SEED_ADMIN_EMAIL;
+  const password = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error(
+      'กรุณาตั้งค่า SEED_ADMIN_EMAIL และ SEED_ADMIN_PASSWORD ใน .env ก่อนรัน seed',
+    );
+  }
+
   let adminId: string;
 
   try {
     const existing = await usersService.findByEmail(email);
     adminId = String(existing._id);
     console.log('✅ Admin already exists');
-  } catch (e) {
+  } catch {
     const admin = await usersService.createUser(email, password, 'admin');
     adminId = String(admin._id);
     console.log('🔥 Admin created');
@@ -30,12 +36,11 @@ async function bootstrap() {
 
   // ลบ duplicate ก่อน seed
   const allProducts = await productsService.findAll();
-  const seen = new Map<string, string>(); // name → _id
+  const seen = new Map<string, string>();
 
   for (const product of allProducts) {
     const id = String(product._id);
     if (seen.has(product.name)) {
-      // มีแล้ว ลบอันนี้ทิ้ง (เก็บอันแรกไว้)
       await productsService.delete(id);
       console.log(`🗑️ Deleted duplicate: ${product.name} (${id})`);
     } else {
@@ -43,42 +48,56 @@ async function bootstrap() {
     }
   }
 
-  // เช็ค products ที่มีอยู่แล้ว (หลังลบ duplicate)
   const existingProducts = await productsService.findAll();
-  const existingNames = existingProducts.map((p) => p.name);
+  const existingByName = new Map(
+    existingProducts.map((product) => [product.name, product]),
+  );
 
   const products = [
     {
       name: 'มังคุด',
-      description: 'ผลไม้รสหวานอมเปรี้ยว',
+      description:
+        'มังคุด กินแล้วฟันไม่คุด แต่ถ้ากินเยอะก็ไม่แน่ ไม่ใช่ฟันคุดนะ จะอ้วน',
       price: 50,
       stock: 100,
       category: 'fruit',
     },
     {
       name: 'ทุเรียน',
-      description: 'ราชาแห่งผลไม้',
+      description:
+        'ทุเรียน กลิ่นสุดเอียนที่สวยลุงศักดิ์ ใครจะกินก็กิน ผมไม่กิน',
       price: 500,
       stock: 30,
       category: 'fruit',
     },
     {
       name: 'มะม่วง',
-      description: 'มะม่วงน้ำดอกไม้สุก',
+      description:
+        'มะม่วงสีแดง พันธ์ใหม่ในส่วนป้าหน่อย อร่อยถูกใจ อนามัยถูกลืม แต่ไม่มีใครปลิ้ม แต่ป้าก็ยังขายต่อ',
       price: 80,
       stock: 200,
       category: 'fruit',
     },
     {
       name: 'ลำไย',
-      description: 'ลำไยเนื้อหนา',
+      description:
+        'ลำไยสุดหวาน หวานเรียกพ่อ ขมเรียกพี่ แต่อย่ากินดีกว่า ',
       price: 60,
       stock: 150,
       category: 'fruit',
     },
     {
       name: 'เงาะ',
-      description: 'เงาะโรงเรียน',
+      description:
+        'เงาะโรงแรม พันธ์ใหม่ในประเทศไทย ใครจะกินก็กินก็กิน ผมไม่กิน',
+      price: 40,
+      stock: 120,
+      category: 'fruit',
+    },
+    {
+      name: 'แก้วมังกร',
+      description:
+        'แก้วมังกรแสนอร่อย กินบ่อยๆ อาจจะติดใจ นานๆ ไปอาจติดเตียง',
       price: 40,
       stock: 120,
       category: 'fruit',
@@ -86,10 +105,16 @@ async function bootstrap() {
   ];
 
   for (const product of products) {
-    if (existingNames.includes(product.name)) {
-      console.log(`⏭️ Skip: ${product.name} มีอยู่แล้ว`);
+    const existing = existingByName.get(product.name);
+
+    if (existing) {
+      await productsService.update(String(existing._id), {
+        description: product.description,
+      });
+      console.log(`✏️ Updated description: ${product.name}`);
       continue;
     }
+
     await productsService.create(product, adminId);
     console.log(`🌱 Created product: ${product.name}`);
   }
