@@ -16,6 +16,14 @@ export class OrdersService {
   ) {}
 
   async checkout(userId: string) {
+    const existingPending = await this.orderModel.findOne({
+      userId,
+      status: OrderStatus.PENDING,
+    });
+    if (existingPending) {
+      return existingPending;
+    }
+
     const cart = await this.cartService.getCart(userId);
 
     if (!cart.items || cart.items.length === 0) {
