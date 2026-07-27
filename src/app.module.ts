@@ -15,10 +15,10 @@ import { PaymentsModule } from './payments/payments.module';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => {
         const uri =
-          config.get<string>('MONGODB_URI') ?? config.get<string>('MONGO_URI');
+          config.get<string>('MONGO_URI') ?? config.get<string>('MONGODB_URI');
         if (!uri) {
           throw new Error(
-            'ไม่พบ MONGODB_URI ใน .env — สร้างไฟล์ .env แล้วใส่ MONGODB_URI=mongodb://localhost:27017/fruitshop',
+            'ไม่พบ MONGO_URI ใน .env — copy .env.example แล้วใส่ connection string',
           );
         }
         return { uri };

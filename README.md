@@ -59,7 +59,7 @@ cp .env.example .env
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/fruitshop` |
+| `MONGO_URI` | MongoDB connection string | `mongodb+srv://<user>:<pass>@cluster.mongodb.net/fruitshop` |
 | `JWT_SECRET` | Must match Auth Service secret | `your-shared-secret` |
 | `OMISE_PUBLIC_KEY` | Omise public key | `pkey_test_xxx` |
 | `OMISE_SECRET_KEY` | Omise secret key | `skey_test_xxx` |
