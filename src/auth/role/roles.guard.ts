@@ -1,11 +1,15 @@
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Injectable,
 } from '@nestjs/common';
-
 import { Reflector } from '@nestjs/core';
+import type { Request } from 'express';
+
+interface RequestWithUser extends Request {
+  user?: { id: string; email: string; role: string };
+}
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -19,12 +23,10 @@ export class RolesGuard implements CanActivate {
 
     if (!requiredRoles) return true;
 
-    const req = context.switchToHttp().getRequest();
-    console.log('request.user:', req.user?.role);
-    const user = req.user; // ใส่มาให้แล้วจาก JwtStrategy
+    const req = context.switchToHttp().getRequest<RequestWithUser>();
+    const user = req.user;
 
-    if (!requiredRoles.includes(user.role)) {
-      console.log('นี่มันสำหรับ admin นะไอน้อง')
+    if (!user || !requiredRoles.includes(user.role)) {
       throw new ForbiddenException('คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้');
     }
 
