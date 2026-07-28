@@ -8,11 +8,12 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
+  // app.enableCors({
+  //   origin: '*',
+  //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  //   allowedHeaders: ['Content-Type', 'Authorization'],
+
+  // });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -21,7 +22,10 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: [
+      'http://localhost:5173',
+      'https://fruit-shop-frontend-six.vercel.app',
+    ],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000);

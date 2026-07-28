@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -29,9 +30,14 @@ export class PaymentsService {
     });
   }
 
-  async charge(oderId: string, token: string) {
-    const order = await this.orderModel.findById(oderId);
+  async charge(orderId: string, token: string, userId: string) {
+    const order = await this.orderModel.findById(orderId);
     if (!order) throw new NotFoundException('Order not found');
+
+    if (String(order.userId) !== userId) {
+      throw new ForbiddenException('ไม่มีสิทธิ์จ่ายออเดอร์นี้');
+    }
+
     if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException('Order is not pending');
     }
