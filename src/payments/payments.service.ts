@@ -46,6 +46,7 @@ export class PaymentsService {
       amount: order.totalPrice * 100,
       currency: 'thb',
       card: token,
+      metadata: { orderId: String(order._id) },
     });
 
     if (charge.status === 'successful') {
@@ -63,19 +64,26 @@ export class PaymentsService {
     return { chargeId: charge.id, status: charge.status };
   }
 
-  async webhook(payload: any) {
-    if (payload.key !== 'charge.complete') return;
+  async webhook(payload: {
+    key?: string;
+    data?: { status?: string; metadata?: { orderId?: string } };
+  }) {
+    if (payload.key !== 'charge.complete') return { received: true };
     const charge = payload.data;
-    if (charge.status === 'successful') return;
-
-    const order = await this.orderModel.findOne({
-      'items.productId': { $exists: true },
-      status: OrderStatus.PENDING,
-    });
-
-    if (order) {
-      order.status = OrderStatus.PAID;
-      await order.save();
-    }
+    if (!charge || charge.status !== 'successful') return { received: true };
+    const orderId = charge.metadata?.orderId;
+    if (!orderId) return { received: true };
+    const order = await this.orderModel.findById(orderId);
+    if (!order || order.status !== OrderStatus.PENDING)
+      return { received: true };
+    order.status = OrderStatus.PAID;
+    await order.save();
+    await this.cartService.clearCart(String(order.userId));
+    await this.notificationsService.sendPaymentSuccess(
+      String(order.userId),
+      String(order._id),
+      order.totalPrice,
+    );
+    return { received: true };
   }
 }
