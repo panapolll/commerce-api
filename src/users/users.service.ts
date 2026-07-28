@@ -49,13 +49,4 @@ export class UsersService {
   async findAll() {
     return this.userModel.find().select('-password').exec();
   }
-
-  async getString() {
-    return 'จ้าาาา';
-  }
-
-  testApi(b: string) {
-    b = 'อะโห';
-    return b;
-  }
 }
