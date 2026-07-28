@@ -9,7 +9,6 @@ export class PaymentsController {
   @Post('charge')
   @UseGuards(JwtAuthGuard)
   charge(@Req() req, @Body() body: { orderId: string; token: string }) {
-    console.log(req.user);
     return this.paymentServce.charge(body.orderId, body.token, req.user.id);
   }
 
