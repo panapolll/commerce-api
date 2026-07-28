@@ -1,45 +1,51 @@
-# 🔐 Fruit Shop — Auth Service
+# 🔐 Auth Service — คู่มืออ่านเอง
 
-JWT authentication microservice for the Fruit Shop e-commerce platform.
+## หน้าที่
 
-## ✨ Features
+จัดการ **ตัวตนผู้ใช้** — สมัคร, login, refresh token, logout
 
-- User registration and login
-- JWT access token (15 min expiry)
-- Refresh token (1 hour expiry)
-- Role-based tokens (`user` / `admin`)
-- Deployed on Render
+**ไม่เก็บสินค้า ไม่เก็บตะกร้า** — แค่ user + password (hash) + refresh token ใน DB
 
-## 🛠️ Tech Stack
+---
 
-| Layer | Technology |
-|-------|------------|
-| Framework | NestJS |
-| Database | MongoDB + Mongoose |
-| Auth | JWT + bcrypt |
-| Deploy | Render |
+## Flow login (จำแบบนี้)
 
-## 🔗 Related Repositories
+```
+1. User ส่ง email + password
+2. bcrypt เทียบ password
+3. ออก access_token (15 นาที) + refresh_token (1 ชม.)
+4. เก็บ refresh_token (hash) ใน MongoDB
+5. ส่ง tokens กลับ Frontend
+```
 
-| Service | Repository |
-|---------|------------|
-| Frontend | [fruit-shop-frontend](https://github.com/panapolll/fruit-shop-frontend) |
-| API Gateway | [Api-Gateway](https://github.com/panapolll/Api-Gateway) |
-| Commerce API | [commerce-api](https://github.com/panapolll/commerce-api) |
+Token หมดอายุ → เรียก `POST /auth/refresh` ด้วย `userId` + `refreshToken`
 
-## 🚀 Live API
+---
 
-https://auth-service-7xty.onrender.com
+## ValidationPipe (ข้อ 10 ที่แก้)
 
-## 📡 API Endpoints
+`main.ts` เปิด `ValidationPipe` global แล้ว
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register new user |
-| POST | `/auth/login` | Login → access + refresh token |
-| POST | `/auth/refresh` | Refresh access token |
+`RefreshTokenDto` แก้จาก `@IsEmail()` ผิด field เป็น:
 
-## 🚀 Getting Started
+- `refreshToken` → `@IsString()` + `@IsNotEmpty()`
+- `userId` → `@IsMongoId()`
+
+---
+
+## API
+
+| Method | Path | หมายเหตุ |
+|--------|------|----------|
+| POST | `/auth/register` | สมัคร user |
+| POST | `/auth/login` | ได้ tokens |
+| POST | `/auth/refresh` | ต่ออายุ access |
+| POST | `/auth/logout` | ต้อง Bearer token |
+| POST | `/auth/verify` | Gateway ใช้ตรวจ token |
+
+---
+
+## วิธีรัน
 
 ```bash
 git clone https://github.com/panapolll/Auth-Service.git
@@ -49,15 +55,28 @@ cp .env.example .env
 yarn start:dev
 ```
 
-## ⚙️ Environment Variables
+Port: **3100**
 
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB connection string |
-| `JWT_SECRET` | Shared secret (must match Commerce API) |
-| `JWT_REFRESH_SECRET` | Refresh token secret |
-| `PORT` | Server port (default `3100`) |
+---
 
-## 👨‍💻 Author
+## Environment
 
-Portfolio project — microservices e-commerce.
+| ตัวแปร | หมายเหตุ |
+|--------|----------|
+| `MONGODB_URI` | MongoDB ของ Auth (แยกจาก Commerce ได้) |
+| `JWT_SECRET` | **ต้องตรง** กับ Gateway |
+| `REFRESH_TOKEN_SECRET` | sign refresh token |
+| `PORT` | 3100 |
+
+---
+
+## Live
+
+https://auth-service-7xty.onrender.com
+
+---
+
+## สัมภาษณ์
+
+**Q: ทำไมไม่ให้ Commerce login เอง?**  
+A: Single responsibility — Auth ดูแล identity อย่างเดียว เปลี่ยน policy login ไม่กระทบร้านค้า

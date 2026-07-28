@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Fruit Shop — คู่มือทบทวน</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      font-size: 11pt;
+      line-height: 1.55;
+      color: #1a1a1a;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 12mm 15mm;
+    }
+    h1 { font-size: 20pt; color: #166534; border-bottom: 2px solid #4ade80; padding-bottom: 6px; margin-top: 0; }
+    h2 { font-size: 14pt; color: #14532d; margin-top: 18px; page-break-after: avoid; }
+    h3 { font-size: 12pt; color: #333; page-break-after: avoid; }
+    .cover { text-align: center; padding: 40mm 0 30mm; page-break-after: always; }
+    .cover h1 { font-size: 28pt; border: none; }
+    .cover p { font-size: 13pt; color: #555; }
+    .chapter { page-break-before: always; }
+    .chapter:first-of-type { page-break-before: auto; }
+    pre {
+      background: #f4f4f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5pt;
+      line-height: 1.45;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      page-break-inside: avoid;
+    }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 9pt; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10pt; page-break-inside: avoid; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    th { background: #ecfdf5; font-weight: 600; }
+    blockquote { border-left: 4px solid #4ade80; margin: 8px 0; padding: 6px 12px; background: #f0fdf4; }
+    li { margin: 4px 0 4px 18px; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 16px 0; }
+    @media print {
+      body { padding: 0; }
+      .chapter { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <h1>🍎 Fruit Shop</h1>
+    <p><strong>คู่มือทบทวนโปรเจกต์ Portfolio</strong></p>
+    <p>Microservices — NestJS + React + MongoDB + Omise</p>
+    <p>Panapol Sukcharoen</p>
+    <p style="margin-top:24px;font-size:10pt;color:#888;">พิมพ์ออกมาอ่านก่อนสัมภาษณ์ · commerce-api / portfolio-readmes</p>
+  </div>
+  <section class="chapter">
+<h1>🍎 Fruit Shop — ภาพรวมทั้งโปรเจกต์</h1>
+<p>เอกสารนี้เขียนให้ <strong>ตัวเราเองอ่านทบทวน</strong> ก่อนสัมภาษณ์  </p>
+<p>ไม่ต้องจำทุกบรรทัด — จำ <strong>flow</strong> กับ <strong>ทำไมแยก service</strong> พอ</p>
+<hr>
+<h2>ระบบทำอะไร?</h2>
+<p>เว็บขายผลไม้: สมัครสมาชิก → ดูสินค้า → ใส่ตะกร้า → checkout → จ่ายบัตร → ได้แจ้งเตือน</p>
+<hr>
+<h2>แผนภาพ (วาดในใจแบบนี้)</h2>
+<pre><code>                    ┌─────────────────┐
+                    │  React Frontend │
+                    │  (Vercel)       │
+                    └────────┬────────┘
+                             │ VITE_API_URL
+                             ▼
+                    ┌─────────────────┐
+                    │  API Gateway    │
+                    │  :3004          │
+                    │  ตรวจ JWT       │
+                    └────────┬────────┘
+           ┌─────────────────┼─────────────────┐
+           ▼                 ▼                 ▼
+   ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+   │ Auth-Service │  │ Commerce-API │  │ Notification     │
+   │ :3100        │  │ :3000        │  │ :3001            │
+   │ login/register│  │ สินค้า จ่ายเงิน│  │ แจ้งเตือน        │
+   └──────┬───────┘  └──────┬───────┘  └──────────────────┘
+          │                 │
+          └────────┬────────┘
+                   ▼
+            ┌─────────────┐
+            │  MongoDB    │
+            └─────────────┘</code></pre>
+<hr>
+<h2>แต่ละ repo หน้าที่อะไร (หนึ่งประโยค)</h2>
+<table>
+<tr><th>Repo</th><th>หน้าที่สั้นๆ</th></tr>
+<tr><td><strong>frontend</strong></td><td>หน้าจอให้ user กด — เรียก API แค่ Gateway</td></tr>
+<tr><td><strong>Api-Gateway</strong></td><td>ประตูเดียว + แปลง JWT เป็น headers ส่งต่อ</td></tr>
+<tr><td><strong>Auth-Service</strong></td><td>สมัคร / login / refresh — ออก JWT</td></tr>
+<tr><td><strong>commerce-api</strong></td><td>สินค้า ตะกร้า ออเดอร์ Omise</td></tr>
+<tr><td><strong>notification-service</strong></td><td>เก็บและแสดงแจ้งเตือน</td></tr>
+</table>
+<hr>
+<h2>ลำดับรันบนเครื่อง (local)</h2>
+<li>MongoDB (Atlas หรือ local)</li>
+<li>Auth-Service <code>:3100</code></li>
+<li>Commerce-API <code>:3000</code> (+ <code>yarn seed</code> ครั้งแรก)</li>
+<li>Notification <code>:3001</code></li>
+<li>Api-Gateway <code>:3004</code></li>
+<li>Frontend <code>yarn dev</code> → <code>localhost:5173</code></li>
+<hr>
+<h2>Secret ที่ต้อง <strong>ตรงกัน</strong> ข้าม repo</h2>
+<table>
+<tr><th>ตัวแปร</th><th>ใช้ที่ไหนบ้าง</th></tr>
+<tr><td><code>JWT_SECRET</code></td><td>Auth, Gateway (verify), Commerce (เรียก notification)</td></tr>
+<tr><td><code>GATEWAY_SECRET</code></td><td>Gateway (ส่ง) + Commerce (รับ)</td></tr>
+<tr><td><code>VITE_OMISE_PUBLIC_KEY</code></td><td>Frontend</td></tr>
+<tr><td><code>OMISE_SECRET_KEY</code></td><td>Commerce (charge) — คู่กับ public key</td></tr>
+</table>
+<hr>
+<h2>คำถามสัมภาษณ์ที่เตรียมไว้</h2>
+<p><strong>Q: ทำไมใช้ microservices?</strong>  </p>
+<p>A: แยกหน้าที่ชัด — auth เปลี่ยนบ่อยไม่กระทบ commerce, deploy แยกได้, ฝึก pattern จริงใน portfolio</p>
+<p><strong>Q: Gateway ทำอะไร?</strong>  </p>
+<p>A: Frontend เรียกที่เดียว, verify JWT, ส่ง <code>x-user-id/email/role</code> + <code>x-gateway-secret</code> ไป commerce</p>
+<p><strong>Q: กันคนอื่นจ่ายออเดอร์เราได้ไหม?</strong>  </p>
+<p>A: <code>charge()</code> เช็ค <code>order.userId === req.user.id</code> → 403 ถ้าไม่ใช่เจ้าของ</p>
+<p><strong>Q: 401 vs 403?</strong>  </p>
+<p>A: 401 ยังไม่ auth / token พัง — 403 auth แล้วแต่สิทธิ์ไม่พอ</p>
+<hr>
+<h2>ลิงก์ README แต่ละตัว</h2>
+<li>Commerce API</li>
+<li>API Gateway</li>
+<li>Auth Service</li>
+<li>Frontend</li>
+<li>Notification Service</li>
+</section>
+<section class="chapter">
+<h1>🍎 Commerce API — ร้านผลไม้ (Fruit Shop)</h1>
+<blockquote><strong>Repo นี้ทำอะไร?</strong>  </blockquote>
+<blockquote>เป็นส่วน <strong>หลังบ้านร้านค้า</strong> — จัดการสินค้า ตะกร้า ออเดอร์ และรับเงินผ่าน Omise  </blockquote>
+<blockquote><strong>ไม่ใช่</strong> ตัว login หลัก (login อยู่ที่ Auth-Service ผ่าน Gateway)</blockquote>
+<p><strong>Demo Frontend:</strong> https://fruit-shop-frontend-six.vercel.app</p>
+<hr>
+<h2>ภาพรวมระบบทั้งหมด (จำแบบนี้)</h2>
+<pre><code>[ React Frontend ]  ← ผู้ใช้กดปุ่มที่นี่ (Vercel)
+        │
+        ▼
+[ API Gateway :3004 ]  ← ประตูทางเข้าเดียว / ตรวจ JWT
+        │
+        ├── Auth-Service (:3100)     → สมัคร / login / refresh token
+        ├── Commerce-API (:3000)     → สินค้า ตะกร้า ออเดอร์ จ่ายเงิน  ← repo นี้
+        └── Notification (:3001)     → แจ้งเตือนหลังจ่ายเงิน</code></pre>
+<p><strong>ทำไมไม่ให้ Frontend ยิงตรง Commerce?</strong></p>
+<li>ซ่อน URL จริงของแต่ละ service</li>
+<li>ตรวจ JWT ที่ Gateway จุดเดียว</li>
+<li>Commerce รู้ว่า request มาจาก Gateway จริง (ผ่าน <code>GATEWAY_SECRET</code>)</li>
+<hr>
+<h2>ใน repo นี้มีอะไรบ้าง</h2>
+<table>
+<tr><th>โฟลเดอร์</th><th>ทำอะไร</th></tr>
+<tr><td><code>src/products</code></td><td>CRUD สินค้า (admin เท่านั้นที่สร้าง/แก้/ลบ)</td></tr>
+<tr><td><code>src/cart</code></td><td>ตะกร้า — เพิ่ม/ลบสินค้า, stock ลดตอนใส่ตะกร้า</td></tr>
+<tr><td><code>src/orders</code></td><td>checkout สร้างออเดอร์ <code>pending</code></td></tr>
+<tr><td><code>src/payments</code></td><td>จ่ายผ่าน Omise + webhook สำรอง</td></tr>
+<tr><td><code>src/notfications</code></td><td>เรียก Notification Service หลังจ่ายสำเร็จ</td></tr>
+<tr><td><code>src/auth</code> + <code>src/users</code></td><td>guard รับ user จาก Gateway headers (ไม่ใช่ login หลัก)</td></tr>
+<tr><td><code>src/seed.ts</code></td><td>ใส่ admin + สินค้าตัวอย่างใน DB</td></tr>
+</table>
+<hr>
+<h2>Flow ที่ควรเข้าใจ (สำหรับสัมภาษณ์)</h2>
+<h3>1) Login (ไม่ได้เกิดใน repo นี้โดยตรง)</h3>
+<pre><code>Frontend → Gateway → Auth-Service
+→ ได้ access_token + refresh_token
+→ Frontend เก็บใน localStorage</code></pre>
+<h3>2) ซื้อของ</h3>
+<pre><code>GET /products        → ดูสินค้า (ไม่ต้อง login)
+POST /cart/add       → ใส่ตะกร้า (ต้อง login) + stock ลด
+POST /orders/checkout → สร้าง order status: pending</code></pre>
+<p>ถ้ามี pending order อยู่แล้ว → <strong>ไม่สร้างซ้ำ</strong> (คืนอันเดิม)</p>
+<h3>3) จ่ายเงิน</h3>
+<pre><code>Frontend สร้าง Omise token จากบัตร (vault.omise.co)
+→ POST /payments/charge { orderId, token }
+→ Commerce เช็คว่า order เป็นของ user นี้จริง (กัน IDOR)
+→ Omise ตัดเงิน → order = paid → ล้างตะกร้า
+→ ส่ง notification ไป Notification Service</code></pre>
+<h3>4) รู้ว่าใครเรียก API (Guards)</h3>
+<pre><code>JwtAuthGuard
+  1. เช็ค x-gateway-secret (ถ้ามี GATEWAY_SECRET ใน .env)
+  2. อ่าน x-user-id, x-user-email, x-user-role จาก Gateway
+  3. ใส่ req.user ให้ controller ใช้
+
+RolesGuard + @Roles('admin')
+  → เช็ค role จาก req.user</code></pre>
+<li><strong>401</strong> = ยังไม่ login / token หมด / secret ผิด  </li>
+<li><strong>403</strong> = login แล้วแต่ role ไม่พอ (เช่น user อยากลบสินค้า)</li>
+<hr>
+<h2>วิธีรันบนเครื่อง</h2>
+<h3>ต้องมีก่อน</h3>
+<li>Node.js 20+</li>
+<li>MongoDB (Atlas หรือ local)</li>
+<li>Omise test keys</li>
+<li><strong>Gateway + Auth รันด้วย</strong> ถ้าจะทดสอบผ่าน Frontend จริงๆ</li>
+<h3>ขั้นตอน</h3>
+<pre><code>git clone https://github.com/panapolll/commerce-api.git
+cd commerce-api
+yarn install
+cp .env.example .env   # แก้ค่าให้ครบ
+yarn seed              # สร้าง admin + สินค้า (ต้องมี SEED_ADMIN_* ใน .env)
+yarn start:dev         # รันที่พอร์ต 3000</code></pre>
+<hr>
+<h2>ตัวแปรใน <code>.env</code> (อธิบายทีละตัว)</h2>
+<table>
+<tr><th>ตัวแปร</th><th>ทำไมต้องมี</th></tr>
+<tr><td><code>MONGO_URI</code></td><td>เชื่อม MongoDB เก็บสินค้า ตะกร้า ออเดอร์</td></tr>
+<tr><td><code>JWT_SECRET</code></td><td>ใช้ sign token ตอน commerce เรียก notification (ต้องตรงกับ Auth)</td></tr>
+<tr><td><code>GATEWAY_SECRET</code></td><td>คู่กับ Gateway — กันยิง commerce ตรงโดยไม่ผ่าน Gateway</td></tr>
+<tr><td><code>OMISE_PUBLIC_KEY</code> / <code>OMISE_SECRET_KEY</code></td><td>รับเงิน test mode</td></tr>
+<tr><td><code>NOTIFICATION_SERVICE_URL</code></td><td>URL ของ notification service (เช่น <code>http://localhost:3001</code>)</td></tr>
+<tr><td><code>SEED_ADMIN_EMAIL</code> / <code>SEED_ADMIN_PASSWORD</code></td><td>ใช้ตอน <code>yarn seed</code> เท่านั้น</td></tr>
+</table>
+<hr>
+<h2>API สำคัญ (ผ่าน Gateway ไม่มี prefix <code>/api</code>)</h2>
+<table>
+<tr><th>Method</th><th>Path</th><th>ใครใช้ได้</th></tr>
+<tr><td>GET</td><td><code>/products</code></td><td>ทุกคน</td></tr>
+<tr><td>POST</td><td><code>/products</code></td><td>admin</td></tr>
+<tr><td>GET</td><td><code>/cart</code></td><td>login</td></tr>
+<tr><td>POST</td><td><code>/cart/add</code></td><td>login</td></tr>
+<tr><td>POST</td><td><code>/orders/checkout</code></td><td>login</td></tr>
+<tr><td>GET</td><td><code>/orders/me</code></td><td>login</td></tr>
+<tr><td>POST</td><td><code>/payments/charge</code></td><td>login (เจ้าของ order)</td></tr>
+</table>
+<hr>
+<h2>Repo ที่เกี่ยวข้อง</h2>
+<table>
+<tr><th>Service</th><th>GitHub</th></tr>
+<tr><td>Frontend</td><td>fruit-shop-frontend</td></tr>
+<tr><td>API Gateway</td><td>Api-Gateway</td></tr>
+<tr><td>Auth Service</td><td>Auth-Service</td></tr>
+<tr><td>Notification</td><td>notification-service</td></tr>
+</table>
+<p>README ภาษาไทยทุก service อยู่ในโฟลเดอร์ <code>portfolio-readmes/</code></p>
+<hr>
+<h2>สิ่งที่แก้/เรียนรู้จากโปรเจกต์นี้</h2>
+<li>แยก microservice ตามหน้าที่ (auth ≠ commerce)</li>
+<li>ปิด endpoint เปิดโล่ง (<code>POST /users/:createUsers</code>)</li>
+<li>กัน IDOR ตอนจ่ายเงิน (เช็คเจ้าของ order)</li>
+<li><code>GATEWAY_SECRET</code> คู่กัน Gateway ↔ Commerce</li>
+<li>Omise: token ที่ frontend, charge ที่ backend</li>
+<li>Notification ไม่ให้พัง flow จ่ายเงิน (try/catch + log)</li>
+<hr>
+<h2>ผู้พัฒนา</h2>
+<p>Portfolio project — Panapol Sukcharoen (career changer → full-stack / backend)</p>
+</section>
+<section class="chapter">
+<h1>Commerce API — คู่มือสั้น (อ่านเอง)</h1>
+<p>ดู README หลักใน root repo ด้วย — ไฟล์นี้สรุปซ้ำแบบจำง่าย</p>
+<h2>จำสามคำ</h2>
+<p><strong>สินค้า → ตะกร้า → ออเดอร์ → จ่ายเงิน → แจ้งเตือน</strong></p>
+<h2>Port</h2>
+<p><code>3000</code></p>
+<h2>คำสั่ง</h2>
+<pre><code>yarn install
+cp .env.example .env
+yarn seed
+yarn start:dev</code></pre>
+<h2>Guard สำคัญ</h2>
+<li><code>JwtAuthGuard</code> — รับ user จาก Gateway headers + เช็ค <code>GATEWAY_SECRET</code></li>
+<li><code>RolesGuard</code> — admin เท่านั้นสำหรับ CRUD สินค้า</li>
+<h2>อย่าเปิด endpoint แบบนี้อีก</h2>
+<li><code>POST /users/:createUsers</code> ไม่มี guard → ลบแล้ว</li>
+<li>สมัคร user ผ่าน Auth-Service เท่านั้น</li>
+</section>
+<section class="chapter">
+<h1>🔀 API Gateway — คู่มืออ่านเอง</h1>
+<h2>Gateway คืออะไร?</h2>
+<p><strong>ประตูทางเข้าเดียว</strong> ระหว่าง Frontend กับ backend หลายตัว</p>
+<p>Frontend ไม่ต้องรู้ว่า Auth อยู่พอร์ตไหน Commerce อยู่พอร์ตไหน — รู้แค่ URL ของ Gateway</p>
+<hr>
+<h2>ทำอะไรบ้าง?</h2>
+<li>รับ request จาก Frontend (Vercel / localhost)</li>
+<li>route ไป service ที่ถูก (<code>/auth/*</code> → Auth, <code>/products</code> → Commerce)</li>
+<li>ถ้า route ต้อง login → <code>GatewayAuthGuard</code> verify JWT</li>
+<li>ส่งต่อไป Commerce พร้อม headers:</li>
+<p>   - <code>x-user-id</code>, <code>x-user-email</code>, <code>x-user-role</code></p>
+<p>   - <code>x-gateway-secret</code> (คู่กับ Commerce <code>.env</code>)</p>
+<hr>
+<h2>แผนภาพ</h2>
+<pre><code>Frontend
+   │
+   ▼
+Gateway :3004
+   ├── /auth/login      → Auth-Service
+   ├── /products        → Commerce-API
+   ├── /cart/*          → Commerce-API
+   ├── /orders/*        → Commerce-API
+   ├── /payments/charge → Commerce-API
+   └── /notifications/* → Notification-Service</code></pre>
+<p><strong>ไม่มี</strong> <code>/api</code> นำหน้า — <code>setGlobalPrefix('api')</code> ถูก comment ไว้</p>
+<hr>
+<h2>วิธีรัน</h2>
+<pre><code>git clone https://github.com/panapolll/Api-Gateway.git
+cd Api-Gateway
+yarn install
+cp .env.example .env
+yarn start:dev</code></pre>
+<p>Branch หลัก: <strong><code>master</code></strong> (ไม่ใช่ <code>main</code>)</p>
+<hr>
+<h2>Environment</h2>
+<table>
+<tr><th>ตัวแปร</th><th>ตัวอย่าง</th><th>หมายเหตุ</th></tr>
+<tr><td><code>PORT</code></td><td><code>3004</code></td></tr>
+<tr><td><code>AUTH_SERVICE_URL</code></td><td><code>http://localhost:3100</code></td></tr>
+<tr><td><code>COMMERCE_API_URL</code></td><td><code>http://localhost:3000</code></td></tr>
+<tr><td><code>NOTIFICATION_SERVICE_URL</code></td><td><code>http://localhost:3001</code></td></tr>
+<tr><td><code>JWT_SECRET</code></td><td>ตรงกับ Auth</td><td>ใช้ verify token</td></tr>
+<tr><td><code>GATEWAY_SECRET</code></td><td>สตริงลับเดียวกับ Commerce</td><td>ส่งใน <code>x-gateway-secret</code></td></tr>
+</table>
+<hr>
+<h2>CORS</h2>
+<p>อนุญาต:</p>
+<li><code>http://localhost:5173</code></li>
+<li><code>https://fruit-shop-frontend-six.vercel.app</code></li>
+<p><code>credentials: true</code> สำหรับ cookie/credentials ถ้าใช้ในอนาคต</p>
+<hr>
+<h2>ไฟล์สำคัญ</h2>
+<table>
+<tr><th>ไฟล์</th><th>ทำอะไร</th></tr>
+<tr><td><code>commerce-proxy.service.ts</code></td><td>ส่ง request ไป Commerce + <code>buildHeaders()</code></td></tr>
+<tr><td><code>auth-proxy/*</code></td><td>login register refresh</td></tr>
+<tr><td><code>gateway-auth.guard.ts</code></td><td>ดึง JWT จาก Authorization header</td></tr>
+</table>
+<hr>
+<h2>Push จำไว้</h2>
+<pre><code>git push origin master</code></pre>
+</section>
+<section class="chapter">
+<h1>🔐 Auth Service — คู่มืออ่านเอง</h1>
+<h2>หน้าที่</h2>
+<p>จัดการ <strong>ตัวตนผู้ใช้</strong> — สมัคร, login, refresh token, logout</p>
+<p><strong>ไม่เก็บสินค้า ไม่เก็บตะกร้า</strong> — แค่ user + password (hash) + refresh token ใน DB</p>
+<hr>
+<h2>Flow login (จำแบบนี้)</h2>
+<pre><code>1. User ส่ง email + password
+2. bcrypt เทียบ password
+3. ออก access_token (15 นาที) + refresh_token (1 ชม.)
+4. เก็บ refresh_token (hash) ใน MongoDB
+5. ส่ง tokens กลับ Frontend</code></pre>
+<p>Token หมดอายุ → เรียก <code>POST /auth/refresh</code> ด้วย <code>userId</code> + <code>refreshToken</code></p>
+<hr>
+<h2>ValidationPipe (ข้อ 10 ที่แก้)</h2>
+<p><code>main.ts</code> เปิด <code>ValidationPipe</code> global แล้ว</p>
+<p><code>RefreshTokenDto</code> แก้จาก <code>@IsEmail()</code> ผิด field เป็น:</p>
+<li><code>refreshToken</code> → <code>@IsString()</code> + <code>@IsNotEmpty()</code></li>
+<li><code>userId</code> → <code>@IsMongoId()</code></li>
+<hr>
+<h2>API</h2>
+<table>
+<tr><th>Method</th><th>Path</th><th>หมายเหตุ</th></tr>
+<tr><td>POST</td><td><code>/auth/register</code></td><td>สมัคร user</td></tr>
+<tr><td>POST</td><td><code>/auth/login</code></td><td>ได้ tokens</td></tr>
+<tr><td>POST</td><td><code>/auth/refresh</code></td><td>ต่ออายุ access</td></tr>
+<tr><td>POST</td><td><code>/auth/logout</code></td><td>ต้อง Bearer token</td></tr>
+<tr><td>POST</td><td><code>/auth/verify</code></td><td>Gateway ใช้ตรวจ token</td></tr>
+</table>
+<hr>
+<h2>วิธีรัน</h2>
+<pre><code>git clone https://github.com/panapolll/Auth-Service.git
+cd Auth-Service
+yarn install
+cp .env.example .env
+yarn start:dev</code></pre>
+<p>Port: <strong>3100</strong></p>
+<hr>
+<h2>Environment</h2>
+<table>
+<tr><th>ตัวแปร</th><th>หมายเหตุ</th></tr>
+<tr><td><code>MONGODB_URI</code></td><td>MongoDB ของ Auth (แยกจาก Commerce ได้)</td></tr>
+<tr><td><code>JWT_SECRET</code></td><td><strong>ต้องตรง</strong> กับ Gateway</td></tr>
+<tr><td><code>REFRESH_TOKEN_SECRET</code></td><td>sign refresh token</td></tr>
+<tr><td><code>PORT</code></td><td>3100</td></tr>
+</table>
+<hr>
+<h2>Live</h2>
+<p>https://auth-service-7xty.onrender.com</p>
+<hr>
+<h2>สัมภาษณ์</h2>
+<p><strong>Q: ทำไมไม่ให้ Commerce login เอง?</strong>  </p>
+<p>A: Single responsibility — Auth ดูแล identity อย่างเดียว เปลี่ยน policy login ไม่กระทบร้านค้า</p>
+</section>
+<section class="chapter">
+<h1>🖥️ Frontend — คู่มืออ่านเอง</h1>
+<p>React + Vite — หน้าที่ให้ user ใช้งานจริง</p>
+<p><strong>Repo จริง:</strong> <code>fruit-shop-frontend</code> หรือ <code>ReactSeries/frontend</code> (แล้วแต่เครื่อง)  </p>
+<p><strong>Deploy:</strong> Vercel → https://fruit-shop-frontend-six.vercel.app</p>
+<hr>
+<h2>หลักการสำคัญ</h2>
+<p>Frontend เรียก API <strong>แค่ Gateway</strong> — ไม่ยิงตรง Commerce หรือ Auth</p>
+<pre><code>// config.ts
+export const GATEWAY_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3004";</code></pre>
+<p>Production บน Vercel ต้องตั้ง:</p>
+<pre><code>VITE_API_URL=https://your-gateway.onrender.com
+VITE_OMISE_PUBLIC_KEY=pkey_test_xxxxx</code></pre>
+<p><strong>หลังเพิ่ม env ต้อง Redeploy</strong> — แก้ในเครื่องอย่างเดียว Vercel ไม่เปลี่ยน</p>
+<hr>
+<h2>หน้าหลัก</h2>
+<table>
+<tr><th>Path</th><th>หน้า</th></tr>
+<tr><td><code>/login</code></td><td>เข้าสู่ระบบ</td></tr>
+<tr><td><code>/register</code></td><td>สมัคร (validate ภาษาไทย)</td></tr>
+<tr><td><code>/products</code></td><td>ดูสินค้า</td></tr>
+<tr><td><code>/cart</code></td><td>ตะกร้า</td></tr>
+<tr><td><code>/payment</code></td><td>จ่าย Omise</td></tr>
+<tr><td><code>/orders</code></td><td>ออเดอร์ของฉัน</td></tr>
+<tr><td><code>/notifications</code></td><td>แจ้งเตือน</td></tr>
+</table>
+<hr>
+<h2>Omise (จ่ายเงิน)</h2>
+<li><code>index.html</code> โหลด <code>https://cdn.omise.co/omise.js</code></li>
+<li><code>PaymentPage</code> เรียก <code>Omise.createToken('card', {...})</code></li>
+<li>ได้ <code>token</code> ส่งไป <code>POST /payments/charge</code> ผ่าน Gateway</li>
+<p><strong>บัตรทดสอบ:</strong> <code>4242 4242 4242 4242</code>  </p>
+<p><strong>ปี:</strong> ต้อง 4 หลัก เช่น <code>2028</code> (ไม่ใช่ <code>28</code>)</p>
+<p>Error <code>vault.omise.co/tokens 400</code> → มักเป็น public key ผิด หรือปีบัตรผิด</p>
+<hr>
+<h2>Token เก็บที่ไหน</h2>
+<p><code>localStorage</code> — access_token, refresh_token, userId</p>
+<p>Axios interceptor ใน <code>client.ts</code> แนบ <code>Authorization: Bearer ...</code> และ refresh อัตโนมัติเมื่อ 401</p>
+<hr>
+<h2>วิธีรัน</h2>
+<pre><code>yarn install
+yarn dev</code></pre>
+<p>เปิด http://localhost:5173</p>
+<hr>
+<h2>Push ขึ้น Vercel</h2>
+<pre><code>git add .
+git commit -m "..."
+git push origin main</code></pre>
+<p>รอ Vercel deploy → hard refresh (<code>Ctrl+Shift+R</code>)</p>
+</section>
+<section class="chapter">
+<h1>🔔 Notification Service — คู่มืออ่านเอง</h1>
+<h2>หน้าที่</h2>
+<p>เก็บ <strong>แจ้งเตือนในแอป</strong> — เช่น "ชำระเงินสำเร็จ"</p>
+<p>ไม่ส่ง email / SMS — แค่ in-app notification ที่ user เปิดดูใน Frontend</p>
+<hr>
+<h2>ใครเรียกใช้?</h2>
+<table>
+<tr><th>ใคร</th><th>เมื่อไหร่</th></tr>
+<tr><td><strong>Commerce-API</strong></td><td>หลัง Omise charge สำเร็จ → <code>POST /notifications</code> (service-to-service)</td></tr>
+<tr><td><strong>Frontend</strong></td><td>ผ่าน Gateway → <code>GET /notifications/me</code>, mark read, ลบ</td></tr>
+</table>
+<hr>
+<h2>Flow หลังจ่ายเงิน</h2>
+<pre><code>Commerce charge() สำเร็จ
+    → notificationsService.sendPaymentSuccess()
+    → sign JWT ชั่วคราว role admin (service account)
+    → POST notification-service/notifications
+    → บันทึก MongoDB
+
+User เปิดหน้า Notifications
+    → Gateway → GET /notifications/me
+    → เห็น "ชำระเงินสำเร็จ 💳"</code></pre>
+<p>ถ้า notification ล้ม → <strong>จ่ายเงินยังสำเร็จ</strong> (commerce ใช้ try/catch ไม่ให้พัง flow)</p>
+<hr>
+<h2>วิธีรัน</h2>
+<pre><code>git clone https://github.com/panapolll/notification-service.git
+cd notification-service
+yarn install
+cp .env.example .env
+yarn start:dev</code></pre>
+<p>Port: <strong>3001</strong></p>
+<hr>
+<h2>Environment</h2>
+<table>
+<tr><th>ตัวแปร</th><th>หมายเหตุ</th></tr>
+<tr><td><code>MONGODB_URI</code></td><td>เก็บ notifications</td></tr>
+<tr><td><code>JWT_SECRET</code></td><td>ตรงกับ Auth — verify Bearer จาก user</td></tr>
+<tr><td><code>PORT</code></td><td>3001</td></tr>
+</table>
+<p>Commerce ต้องมี <code>NOTIFICATION_SERVICE_URL</code> ชี้มาที่นี่</p>
+<hr>
+<h2>API (ผ่าน Gateway)</h2>
+<table>
+<tr><th>Method</th><th>Path</th><th>ใคร</th></tr>
+<tr><td>GET</td><td><code>/notifications/me</code></td><td>user login</td></tr>
+<tr><td>GET</td><td><code>/notifications/unread-count</code></td><td>user login</td></tr>
+<tr><td>PATCH</td><td><code>/notifications/mark-all-read</code></td><td>user login</td></tr>
+<tr><td>PATCH</td><td><code>/notifications/:id/read</code></td><td>user login</td></tr>
+<tr><td>DELETE</td><td><code>/notifications/:id</code></td><td>user login</td></tr>
+<tr><td>POST</td><td><code>/notifications</code></td><td>admin / service (commerce เรียก)</td></tr>
+</table>
+<hr>
+<h2>สัมภาษณ์</h2>
+<p><strong>Q: ทำไมแยก service?</strong>  </p>
+<p>A: แจ้งเตือนอาจขยายเป็น push/email ทีหลัง ไม่ต้องแก้ commerce  </p>
+<p><strong>Q: ทำไม commerce sign JWT เอง?</strong>  </p>
+<p>A: POST สร้าง notification ต้อง admin — commerce เป็น trusted internal caller</p>
+</section>
+
+</body>
+</html>
