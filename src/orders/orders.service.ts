@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CartService } from 'src/cart/cart.service';
@@ -51,27 +47,5 @@ export class OrdersService {
     return this.orderModel
       .find({ userId })
       .populate('items.productId', 'name price');
-  }
-
-  async getAllOrders() {
-    return this.orderModel
-      .find()
-      .populate('items.productId', 'name price')
-      .populate('userId', 'email');
-  }
-
-  async updateStatus(orderId: string, status: OrderStatus) {
-    if (!Object.values(OrderStatus).includes(status)) {
-      throw new BadRequestException(
-        `Status must be one of: ${Object.values(OrderStatus).join(', ')}`,
-      );
-    }
-    const order = await this.orderModel.findByIdAndUpdate(
-      orderId,
-      { status },
-      { new: true },
-    );
-    if (!order) throw new NotFoundException('Order not found');
-    return order;
   }
 }
